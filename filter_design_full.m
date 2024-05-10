@@ -15,7 +15,7 @@ n_order = @(L_As, L_Ar, w_stop, w_pass_half) acosh(sqrt((10^(L_As/10) - 1) / (10
 
 % 计算阶数的值
 n_value = n_order(Stop_dB, Ripple_dB, w_stop, w_pass/2);
-order = ceil(n_value);
+order = 4;
 
 % 显示阶数
 disp(['order= ', num2str(order)]);
@@ -46,23 +46,27 @@ if mod(order,2) == 1
     end
 else
     syms s;
-    %迭代法写出order阶切比雪夫多项式表达式
+    %迭代法写出order阶切比雪夫多项式
     T_2 = power(s,0);
     T_1 = s;
     T = 2*power(s,2) - 1;
     T_temp = 0*s;
-    for i = 1:11-2
+    for i = 1:order-2
         T_temp = T;
         T = 2*s*T - T_1;
         T_2 = T_1;
         T_1 = T_temp;
     end
     T = collect(T,s);
-
-    % w=sqrt(-power(s,2));
-    % w_a=cos((order-1)*pi/(2*order));
-    % w_1
-    % H_w = @(w, w_center, w_pass, w_stop) 1/sqrt(1+power((w*w_center)/(w_pass*w_pass-w*w*w),2));
+    omega = sqrt(-power(s,2));
+    omega_a = cos((order-1)*pi/(2*order));
+    omega_1 = sqrt(power(omega,2)*(1-power(omega_a,2))+power(omega_a,2));
+    T = subs(T,s,omega_1);
+    K_s = T;
+    H_w = 1/sqrt(1+power(epsilon,2)*power(T,2));
+    H_w = collect(H_w,s);
+    %选择H_w的左半极点
+    
 end
 
 L = zeros(1,order+1);
