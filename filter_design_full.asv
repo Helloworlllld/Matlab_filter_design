@@ -1,14 +1,12 @@
 % 参数
-w_center=7*pi*2e9;              %中心角频率
+w_center=6*pi*2e9;              %中心角频率
 relative_bw = 0.1;              %相对带宽
+w_pass = w_center*relative_bw;  %通带带宽角频率
 w_stop = 2*pi*0.5e9;            %指定阻带偏离中心的角频率
 Stop_dB = 15;                   %对应阻带角频率处的衰减
 Reflect_dB = 20;                %通带内最小回波损耗
-Z0 = 50;                        %特性阻抗
-
-w_pass = w_center*relative_bw;  %通带带宽角频率
 Ripple_dB = abs(20*log10(sqrt(1-power(10,-2*Reflect_dB/20))));%通带内插损纹波,取正数
-epsilon = sqrt(10^(Ripple_dB/10) - 1);
+Z0 = 50;                        %特性阻抗
 
 %阶数计算公式
 n_order = @(L_As, L_Ar, w_stop, w_pass_half) acosh(sqrt((10^(L_As/10) - 1) / (10^(L_Ar/10) - 1))) / acosh(w_stop / w_pass_half);
@@ -44,7 +42,7 @@ if mod(order,2) == 1
     else
         g(order+1) = coth(beta/4)^2;
     end
-else
+
     syms s;
     %迭代法写出order阶切比雪夫多项式表达式
     T_2 = power(s,0);

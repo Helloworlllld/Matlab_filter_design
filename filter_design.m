@@ -38,7 +38,7 @@ end
 if mod(order,2) == 1
     g(order+1) = 1.0;
 else
-     g(order+1) = coth(beta/4)^2;
+    g(order+1) = coth(beta/4)^2;
 end
 
 L = zeros(1,order+1);
