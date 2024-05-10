@@ -39,6 +39,9 @@ if mod(order,2) == 1
     g(order+1) = 1.0;
 else
      g(order+1) = coth(beta/4)^2;
+%     for i = 1:order+1
+%         g(i) = g(i)/g(order+1);
+%     end
 end
 
 L = zeros(1,order+1);

@@ -1,0 +1,218 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>filter_design</title><meta name="generator" content="MATLAB 9.13"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2024-05-10"><meta name="DC.source" content="filter_design.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="comment">% &#21442;&#25968;</span>
+w_center=7*pi*2e9;              <span class="comment">%&#20013;&#24515;&#35282;&#39057;&#29575;</span>
+relative_bw = 0.1;              <span class="comment">%&#30456;&#23545;&#24102;&#23485;</span>
+w_pass = w_center*relative_bw;  <span class="comment">%&#36890;&#24102;&#24102;&#23485;&#35282;&#39057;&#29575;</span>
+w_stop = 2*pi*0.5e9;            <span class="comment">%&#25351;&#23450;&#38459;&#24102;&#20559;&#31163;&#20013;&#24515;&#30340;&#35282;&#39057;&#29575;</span>
+Stop_dB = 15;                   <span class="comment">%&#23545;&#24212;&#38459;&#24102;&#35282;&#39057;&#29575;&#22788;&#30340;&#34928;&#20943;</span>
+Reflect_dB = 20;                <span class="comment">%&#36890;&#24102;&#20869;&#26368;&#23567;&#22238;&#27874;&#25439;&#32791;</span>
+Ripple_dB = abs(20*log10(sqrt(1-power(10,-2*Reflect_dB/20))));<span class="comment">%&#36890;&#24102;&#20869;&#25554;&#25439;&#32441;&#27874;,&#21462;&#27491;&#25968;</span>
+Z0 = 50;                        <span class="comment">%&#29305;&#24615;&#38459;&#25239;</span>
+
+<span class="comment">%&#38454;&#25968;&#35745;&#31639;&#20844;&#24335;</span>
+n_order = @(L_As, L_Ar, w_stop, w_pass_half) acosh(sqrt((10^(L_As/10) - 1) / (10^(L_Ar/10) - 1))) / acosh(w_stop / w_pass_half);
+
+<span class="comment">% &#35745;&#31639;&#38454;&#25968;&#30340;&#20540;</span>
+n_value = n_order(Stop_dB, Ripple_dB, w_stop, w_pass/2);
+order = ceil(n_value);
+
+<span class="comment">% &#26174;&#31034;&#38454;&#25968;</span>
+disp([<span class="string">'order= '</span>, num2str(order)]);
+
+g = zeros(1,order+1);
+
+<span class="comment">% &#35745;&#31639;g&#30340;&#20540;</span>
+<span class="comment">%\beta=\ln\biggl[\coth\biggl(\frac{L_{\text{Ar}}}{17.37}\biggr)\biggr]</span>
+beta = log(coth(Ripple_dB/(40/log(10))));
+
+<span class="comment">%\gamma=\sinh\left(\frac\beta{2n}\right)</span>
+gamma = sinh(beta/(2*order));
+
+g(1) = (2/gamma)*sin(pi/(2*order));
+
+<span class="keyword">for</span> i = 2:order
+    <span class="comment">%g_i=\frac1{g_{i-1}}\frac{4\sin\left[\frac{\left(2i-1\right)\pi}{2n}\right]\sin\left[\frac{\left(2i-3\right)\pi}{2n}\right]}{\gamma^2+\sin^2\left[\frac{\left(i-1\right)\pi}n\right]}</span>
+    g(i) = 1/g(i-1) * (4*sin((2*i-1)*pi/(2*order))*sin((2*i-3)*pi/(2*order))) / (gamma^2 + sin((i-1)*pi/order)^2);
+<span class="keyword">end</span>
+
+<span class="comment">%g_{n+1}=\begin{cases}1.0&amp;\text{,}n\text{&#20026;&#22855;&#25968;}\\\coth^2\biggl(\frac{\beta}{4}\biggr)&amp;\text{,}n\text{&#20026;&#20598;&#25968;}\end{cases}</span>
+<span class="keyword">if</span> mod(order,2) == 1
+    g(order+1) = 1.0;
+<span class="keyword">else</span>
+     g(order+1) = coth(beta/4)^2;
+<span class="comment">%     for i = 1:order+1</span>
+<span class="comment">%         g(i) = g(i)/g(order+1);</span>
+<span class="comment">%     end</span>
+<span class="keyword">end</span>
+
+L = zeros(1,order+1);
+C = zeros(1,order+1);
+
+<span class="comment">% &#35745;&#31639;L&#21644;C&#30340;&#20540;</span>
+
+<span class="keyword">for</span> i = 1:order
+    <span class="keyword">if</span> mod(i,2) == 1
+        C(i) = relative_bw/(w_center*Z0*g(i));
+        L(i) = Z0*g(i)/(relative_bw*w_center);
+    <span class="keyword">else</span>
+        L(i) = relative_bw*Z0/(w_center*g(i));
+        C(i) = g(i)/(Z0*relative_bw*w_center);
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="comment">%&#36880;&#32452;&#36755;&#20986;L&#21644;C&#30340;&#20540;</span>
+<span class="keyword">for</span> i = 1:order
+    disp([<span class="string">'L'</span>, num2str(i), <span class="string">' = '</span>, num2str(L(i)), <span class="string">';'</span>]);
+    disp([<span class="string">'C'</span>, num2str(i), <span class="string">' = '</span>, num2str(C(i)), <span class="string">';'</span>]);
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">order= 6
+L1 = 1.132e-08;
+C1 = 4.5665e-14;
+L2 = 8.0446e-11;
+C2 = 6.426e-12;
+L3 = 2.1543e-08;
+C3 = 2.3996e-14;
+L4 = 7.3322e-11;
+C4 = 7.0504e-12;
+L5 = 1.9635e-08;
+C5 = 2.6328e-14;
+L6 = 1.3953e-10;
+C6 = 3.7049e-12;
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+% 参数
+w_center=7*pi*2e9;              %中心角频率
+relative_bw = 0.1;              %相对带宽
+w_pass = w_center*relative_bw;  %通带带宽角频率
+w_stop = 2*pi*0.5e9;            %指定阻带偏离中心的角频率
+Stop_dB = 15;                   %对应阻带角频率处的衰减
+Reflect_dB = 20;                %通带内最小回波损耗
+Ripple_dB = abs(20*log10(sqrt(1-power(10,-2*Reflect_dB/20))));%通带内插损纹波,取正数
+Z0 = 50;                        %特性阻抗
+
+%阶数计算公式
+n_order = @(L_As, L_Ar, w_stop, w_pass_half) acosh(sqrt((10^(L_As/10) - 1) / (10^(L_Ar/10) - 1))) / acosh(w_stop / w_pass_half);
+
+% 计算阶数的值
+n_value = n_order(Stop_dB, Ripple_dB, w_stop, w_pass/2);
+order = ceil(n_value);
+
+% 显示阶数
+disp(['order= ', num2str(order)]);
+
+g = zeros(1,order+1);
+
+% 计算g的值
+%\beta=\ln\biggl[\coth\biggl(\frac{L_{\text{Ar}}}{17.37}\biggr)\biggr]
+beta = log(coth(Ripple_dB/(40/log(10))));
+
+%\gamma=\sinh\left(\frac\beta{2n}\right)
+gamma = sinh(beta/(2*order));
+
+g(1) = (2/gamma)*sin(pi/(2*order));
+
+for i = 2:order
+    %g_i=\frac1{g_{i-1}}\frac{4\sin\left[\frac{\left(2i-1\right)\pi}{2n}\right]\sin\left[\frac{\left(2i-3\right)\pi}{2n}\right]}{\gamma^2+\sin^2\left[\frac{\left(i-1\right)\pi}n\right]}
+    g(i) = 1/g(i-1) * (4*sin((2*i-1)*pi/(2*order))*sin((2*i-3)*pi/(2*order))) / (gamma^2 + sin((i-1)*pi/order)^2);
+end
+
+%g_{n+1}=\begin{cases}1.0&\text{,}n\text{为奇数}\\\coth^2\biggl(\frac{\beta}{4}\biggr)&\text{,}n\text{为偶数}\end{cases}
+if mod(order,2) == 1
+    g(order+1) = 1.0;
+else
+     g(order+1) = coth(beta/4)^2;
+%     for i = 1:order+1
+%         g(i) = g(i)/g(order+1);
+%     end
+end
+
+L = zeros(1,order+1);
+C = zeros(1,order+1);
+
+% 计算L和C的值
+
+for i = 1:order
+    if mod(i,2) == 1
+        C(i) = relative_bw/(w_center*Z0*g(i));
+        L(i) = Z0*g(i)/(relative_bw*w_center);
+    else
+        L(i) = relative_bw*Z0/(w_center*g(i));
+        C(i) = g(i)/(Z0*relative_bw*w_center);
+    end
+end
+
+%逐组输出L和C的值
+for i = 1:order
+    disp(['L', num2str(i), ' = ', num2str(L(i)), ';']);
+    disp(['C', num2str(i), ' = ', num2str(C(i)), ';']);
+end
+##### SOURCE END #####
+--></body></html>
