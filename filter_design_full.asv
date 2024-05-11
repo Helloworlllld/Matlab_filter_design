@@ -7,8 +7,8 @@ Reflect_dB = 20;                %通带内最小回波损耗
 Z0 = 50;                        %特性阻抗
 
 w_pass = w_center*relative_bw;  %通带带宽角频率
-Ripple_dB = abs(20*log10(sqrt(1-power(10,-2*Reflect_dB/20))));%通带内插损纹波,取正数
-%Ripple_dB = 1.0103;
+%Ripple_dB = abs(20*log10(sqrt(1-power(10,-2*Reflect_dB/20))));%通带内插损纹波,取正数
+Ripple_dB = 3.0103;
 epsilon = sqrt(power(10,(Ripple_dB/10)) - 1);
 %epsilon = 1;
 rho = epsilon/sqrt(1+epsilon^2);
@@ -18,7 +18,7 @@ n_order = @(L_As, L_Ar, w_stop, w_pass_half) acosh(sqrt((10^(L_As/10) - 1) / (10
 
 % 计算阶数的值
 n_value = n_order(Stop_dB, Ripple_dB, w_stop, w_pass/2);
-order = ceil(n_value);
+order = 8;
 
 % 显示阶数
 disp(['order= ', num2str(order)]);
@@ -94,26 +94,20 @@ else
     F_s = vpa(F_s);
     E_s = vpa(E_s);
     %计算归一化输入阻抗
-    %E_s = collect(E_s,s);
-    %F_s = collect(F_s,s);
+    E_s = collect(E_s,s);
+    F_s = collect(F_s,s);
     
-    %Z_in = (E_s+F_s)/(E_s-F_s);
-    %Z_in = collect(Z_in,s);
+    Z_in = (E_s+F_s)/(E_s-F_s);
+    Z_in = collect(Z_in,s);
     %[A,B] = numden(Z_in);
     if mod(order,4) == 0
-        A = E_s+F_s;
-        B = E_s-F_s;
-    else
-        B = E_s+F_s;
-        A = E_s-F_s;
-    end
+    A = E_s+F_s;
+    B = E_s-F_s;
     A = collect(A);
     B = collect(B);
     
-    if order > 2
-        coeffs_B = coeffs(B, s);
-        B = B - coeffs_B(end)*power(s,order);
-    end
+    coeffs_B = coeffs(B, s);
+    B = B - coeffs_B(end)*power(s,order);
     g_s = sym('X',[1 order]);
     %辗转相除法求g
     for i = 1:order
