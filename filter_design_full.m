@@ -1,5 +1,5 @@
 % 参数
-w_center=7*pi*2e9;              %中心角频率
+w_center=1*pi*2e9;              %中心角频率
 relative_bw = 0.1;              %相对带宽
 w_stop = 2*pi*0.5e9;            %指定阻带偏离中心的角频率
 Stop_dB = 15;                   %对应阻带角频率处的衰减
@@ -8,15 +8,17 @@ Z0 = 50;                        %特性阻抗
 
 w_pass = w_center*relative_bw;  %通带带宽角频率
 Ripple_dB = abs(20*log10(sqrt(1-power(10,-2*Reflect_dB/20))));%通带内插损纹波,取正数
-epsilon = sqrt(10^(Ripple_dB/10) - 1);
+epsilon = sqrt(power(10,(Ripple_dB/10)) - 1);
+%epsilon = 1;
+rho = epsilon/sqrt(1+epsilon^2);
 
 %阶数计算公式
 n_order = @(L_As, L_Ar, w_stop, w_pass_half) acosh(sqrt((10^(L_As/10) - 1) / (10^(L_Ar/10) - 1))) / acosh(w_stop / w_pass_half);
 
 % 计算阶数的值
 n_value = n_order(Stop_dB, Ripple_dB, w_stop, w_pass/2);
-order = 4;
-
+order = ceil(n_value);
+%order = 4;
 % 显示阶数
 disp(['order= ', num2str(order)]);
 
@@ -58,19 +60,65 @@ else
         T_1 = T_temp;
     end
     T = collect(T,s);
+    P_s = power(2,-order+1)*sqrt(1+power(rho,-2));
     omega = sqrt(-power(s,2));
     omega_a = cos((order-1)*pi/(2*order));
     omega_1 = sqrt(power(omega,2)*(1-power(omega_a,2))+power(omega_a,2));
     T = subs(T,s,omega_1);
-    K_s = T;
-    H_w = 1/sqrt(1+power(epsilon,2)*power(T,2));
-    H_w = collect(H_w,s);
-    %选择H_w的左半极点
+    T_coeffs = coeffs(T,s);
+    T = T - T_coeffs(1);
+    T = collect(T,s);
+    F_s = T;
+    H_s = 1+power(epsilon,2)*power(T,2);
+    H_s = collect(H_s,s);
+    %取多项式系数
+    original_den_sym = coeffs(H_s, s, "All");
+    % 计算极点
+    poles = roots(original_den_sym);
+    % 选择左半平面的极点
+    left_half_poles = poles(real(poles) < 0);
+    digits(64);
+    left_half_poles_vpa = vpa(left_half_poles);
+    coeffs_vector = zeros(order,1);
+    for i = 1:order
+        coeffs_vector(i) = sym2poly(left_half_poles_vpa(i));
+    end
+    new_den = poly(coeffs_vector);
+    % 构建新的传递函数的分母多项式
+    new_den = 1/new_den(end)*new_den;
+    %依据多项式系数写出新的传递函数多项式
+    E_s = poly2sym(new_den, s);
+    E_s = E_s;
+    %统一F_s和E_s的精度
+    F_s = vpa(F_s);
+    E_s = vpa(E_s);
+    %计算归一化输入阻抗
+    E_s = collect(E_s,s);
+    F_s = collect(F_s,s);
     
+    Z_in = (E_s+F_s)/(E_s-F_s);
+    Z_in = collect(Z_in,s);
+    %[A,B] = numden(Z_in);
+    A = E_s+F_s;
+    B = E_s-F_s;
+    A = collect(A);
+    B = collect(B);
+    
+    coeffs_B = coeffs(B, s);
+    B = B - coeffs_B(end)*power(s,order);
+    g_s = sym('X',[1 order]);
+    %辗转相除法求g
+    for i = 1:order
+        [Q,R]= quorem(A, B, s);
+        g_s(i) = Q;
+        [A,B]=numden(B/R);
+        gtemp = coeffs(g_s(i));
+        g(i) = gtemp(end);
+    end
 end
 
-L = zeros(1,order+1);
-C = zeros(1,order+1);
+L = zeros(1,order);
+C = zeros(1,order);
 
 % 计算L和C的值
 
