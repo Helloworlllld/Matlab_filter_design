@@ -43,7 +43,7 @@ for i = 1:length(w)
    S11_dB(i) = 20*log10(reflect(i));
 end
 
-
+%绘图
 figure;
 plot(f/1e9, S11_dB, 'LineWidth', 2, 'DisplayName', 'S11');
 hold on;
@@ -52,5 +52,5 @@ grid on;
 xlim([fmin/1e9 fmax/1e9]);
 xlabel('Frequency (GHz)');
 ylabel('Magnitude (dB)');
-title('S11 and S12/21 (0-5GHz)');
+title('S11 and S12/21');
 legend;
