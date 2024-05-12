@@ -1,6 +1,6 @@
 %切比雪夫Ⅰ型带通滤波器
 %输入参数
-w_center=2*pi*4e9;              %中心角频率
+w_center=2*pi*2e9;              %中心角频率
 relative_bw = 0.1;              %相对带宽
 w_stop = 2*pi*0.5e9;            %指定阻带偏离中心的角频率
 Stop_dB = 15;                   %对应阻带角频率处的衰减
@@ -50,15 +50,14 @@ else
         T_2 = T_1;
         T_1 = T_temp;
     end
-
+    
     T = collect(T,s); %整理多项式，不整理的话求零点时表达式过于复杂，符号引擎无法解析
-
+    
     %搬移零点，保证直流增益为1
     omega = sqrt(-power(s,2));
     omega_a = cos((order-1)*pi/(2*order));
     omega_1 = sqrt(power(omega,2)*(1-power(omega_a,2))+power(omega_a,2));
     T = subs(T,s,omega_1);
-    T_coeffs = coeffs(T,s);
     F_s = T*epsilon;                    %F(s)定义式中包含P(s)，最后计算阻抗的比值式中会与E(s)中的P(s)约掉，故不考虑
     H_s = 1+power(epsilon,2)*power(T,2);%这里其实是H(s)的分母，分子为1，直接倒过来方便计算
     H_s = collect(H_s);                 %整理多项式
@@ -66,26 +65,16 @@ else
     % 寻找H(s)极点,即分母的零点
     original_den_sym = coeffs(H_s, s, "All");
     poles = roots(original_den_sym);
-    poles = collect(poles);
     % 选择左半平面的极点
     left_half_poles = poles(real(poles) < 0);
-    %digits(64); 
-    left_half_poles_vpa = vpa(left_half_poles);
-    coeffs_vector = zeros(order,1);
-    for i = 1:order
-        coeffs_vector(i) = sym2poly(left_half_poles_vpa(i));
-    end
-    
-    % 用左半平面极点构建传递函数的分母多项式，求系数
-    new_den = poly(coeffs_vector);
+    % 转浮点型,poly函数要求数值输入
+    left_half_poles_double = double(left_half_poles);
+    % 用左半平面极点构建传递函数的分母多项式,求系数
+    new_den = poly(left_half_poles_double);
     % 系数根据最后一位归一化，保证输出负载阻抗为1
     new_den = 1/new_den(end)*new_den;
     %依据多项式系数写出新的传递函数多项式
     E_s = poly2sym(new_den, s);
-    
-    %统一F_s和E_s的精度(由于F(s)为syms，E(s)数值)
-    F_s = vpa(F_s);
-    E_s = vpa(E_s);
     
     %分情况写出阻抗分子分母多项式
     if mod(order,4) == 0
@@ -99,7 +88,7 @@ else
     A = collect(A);
     B = collect(B);
     
-    %发现由于数值和符号值的转换误差，阶数大于2时B多出一项系数极小的order阶项，减去
+    %发现由于poly函数的转换误差，阶数大于2时B多出一项系数极小的order阶项，减去
     if order > 2
         coeffs_B = coeffs(B, s);
         B = B - coeffs_B(end)*power(s,order);

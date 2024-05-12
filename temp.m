@@ -1,5 +1,5 @@
 % 参数
-w_center=7*pi*2e9;              %中心角频率
+w_center=1*pi*2e9;              %中心角频率
 relative_bw = 0.1;              %相对带宽
 w_stop = 2*pi*0.5e9;            %指定阻带偏离中心的角频率
 Stop_dB = 15;                   %对应阻带角频率处的衰减
